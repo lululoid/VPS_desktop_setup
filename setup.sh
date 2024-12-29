@@ -1,76 +1,83 @@
 #!/bin/bash
 
+# Define color
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
 # Check for root privileges
 if [[ $EUID -ne 0 ]]; then
-	echo "This script must be run as root"
+	echo -e "${GREEN}This script must be run as root${NC}"
 	exit 1
 fi
 
-# Prompt for the user's password
-echo "Please enter the password for the new user 'tomei':"
-read -s PASSWORD
-echo "Password has been set."
+# Check if password is provided as an argument
+if [ -z "$1" ]; then
+	echo -e "${GREEN}Usage: $0 <password>${NC}"
+	exit 1
+fi
+
+PASSWORD="$1"
 
 # Update and upgrade system packages
-echo "Updating and upgrading system packages..."
+echo -e "${GREEN}Updating and upgrading system packages...${NC}"
 yes | apt update && apt upgrade -y
 
 # Install XFCE desktop environment
-echo "Installing XFCE desktop environment and goodies..."
+echo -e "${GREEN}Installing XFCE desktop environment and goodies...${NC}"
 yes | apt install -y xfce4 xfce4-goodies
 
 # Create a new user named 'tomei'
 USERNAME="tomei"
 if id "$USERNAME" &>/dev/null; then
-	echo "User '$USERNAME' already exists. Skipping user creation."
+	echo -e "${GREEN}User '$USERNAME' already exists. Skipping user creation.${NC}"
 else
-	echo "Creating user '$USERNAME'..."
+	echo -e "${GREEN}Creating user '$USERNAME'...${NC}"
 	yes "" | adduser --gecos "" "$USERNAME"
-	echo "User '$USERNAME' has been created successfully."
+	echo -e "${GREEN}User '$USERNAME' has been created successfully.${NC}"
 	echo "$USERNAME:$PASSWORD" | chpasswd
 fi
 
 # Grant sudo privileges to the new user
-echo "Granting sudo privileges to user '$USERNAME'..."
+echo -e "${GREEN}Granting sudo privileges to user '$USERNAME'...${NC}"
 usermod -aG sudo "$USERNAME"
 
 # Install additional common tools
-echo "Installing additional tools..."
+echo -e "${GREEN}Installing additional tools...${NC}"
 yes | apt install -y curl wget vim git unzip
 
 # Set up firewall (optional, allowing SSH and other common ports)
-echo "Setting up the UFW firewall..."
+echo -e "${GREEN}Setting up the UFW firewall...${NC}"
 yes | apt install -y ufw
 ufw allow OpenSSH
 yes | ufw enable
 
 # Enable and start SSH service
-echo "Enabling and starting SSH service..."
+echo -e "${GREEN}Enabling and starting SSH service...${NC}"
 systemctl enable ssh
 systemctl start ssh
 
 # TurboVNC for remote control
-echo "Installing TurboVNC..."
-echo "Downloading and saving the TurboVNC APT repository list..."
+echo -e "${GREEN}Installing TurboVNC...${NC}"
+echo -e "${GREEN}Downloading and saving the TurboVNC APT repository list...${NC}"
 if
 	wget -q -O- https://packagecloud.io/dcommander/turbovnc/gpgkey |
 		gpg --dearmor >/etc/apt/trusted.gpg.d/TurboVNC.gpg
 	curl -o /etc/apt/sources.list.d/TurboVNC.list https://raw.githubusercontent.com/TurboVNC/repo/main/TurboVNC.list
 	apt update && yes | apt install turbovnc
 then
-	echo "TurboVNC repository list saved to /etc/apt/sources.list.d/TurboVNC.list"
+	echo -e "${GREEN}TurboVNC repository list saved to /etc/apt/sources.list.d/TurboVNC.list${NC}"
 else
-	echo "Failed to download the TurboVNC repository list. Exiting..."
+	echo -e "${GREEN}Failed to download the TurboVNC repository list. Exiting...${NC}"
 	exit 1
 fi
 
 # Setting up VNC
-echo "Setting up TurboVNC..."
+echo -e "${GREEN}Setting up TurboVNC...${NC}"
 
 # Display system information
-echo "System setup complete. Here's your VPS information:"
-echo "------------------------------------"
+echo -e "${GREEN}System setup complete. Here's your VPS information:${NC}"
+echo -e "${GREEN}------------------------------------${NC}"
 hostnamectl
-echo "------------------------------------"
-echo "User '$USERNAME' has been created and granted sudo privileges."
-echo "You can log in with: ssh $USERNAME@<server-ip>"
+echo -e "${GREEN}------------------------------------${NC}"
+echo -e "${GREEN}User '$USERNAME' has been created and granted sudo privileges.${NC}"
+echo -e "${GREEN}You can log in with: ssh $USERNAME@<server-ip>${NC}"
