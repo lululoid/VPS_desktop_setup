@@ -43,6 +43,24 @@ echo "Enabling and starting SSH service..."
 systemctl enable ssh
 systemctl start ssh
 
+# TurboVNC for remote control
+echo "Installing TurboVNC..."
+echo "Downloading and saving the TurboVNC APT repository list..."
+if
+	wget -q -O- https://packagecloud.io/dcommander/turbovnc/gpgkey |
+		gpg --dearmor >/etc/apt/trusted.gpg.d/TurboVNC.gpg
+	curl -o /etc/apt/sources.list.d/TurboVNC.list https://raw.githubusercontent.com/TurboVNC/repo/main/TurboVNC.list
+	apt update && apt apt install turbovnc
+then
+	echo "TurboVNC repository list saved to /etc/apt/sources.list.d/TurboVNC.list"
+else
+	echo "Failed to download the TurboVNC repository list. Exiting..."
+	exit 1
+fi
+
+# Setting up VNC
+echo "Setting up TurboVNC..."
+
 # Display system information
 echo "System setup complete. Here's your VPS information:"
 echo "------------------------------------"
@@ -50,8 +68,3 @@ hostnamectl
 echo "------------------------------------"
 echo "User '$USERNAME' has been created and granted sudo privileges."
 echo "You can log in with: ssh $USERNAME@<server-ip>"
-
-# TurboVNC for remote control
-echo "Installing TurboVNC"
-wget -q -O- https://packagecloud.io/dcommander/turbovnc/gpgkey |
-	gpg --dearmor >/etc/apt/trusted.gpg.d/TurboVNC.gpg
