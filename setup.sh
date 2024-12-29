@@ -106,6 +106,10 @@ sudo systemctl start turbovnc.service
 # Installing additional software
 echo -e "${GREEN}Installing additional software...${NC}"
 apt install -y neovim
+echo -e "${GREEN}Installing chrome...${NC}"
+wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add - &&
+	sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list' &&
+	sudo apt update && sudo apt install -y google-chrome-stable
 
 # Get the IP address for eth1 interface
 IP_ADDRESS=$(ip -o -4 addr list eth1 | awk '{print $4}' | cut -d/ -f1)
