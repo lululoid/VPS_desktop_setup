@@ -107,8 +107,8 @@ sudo systemctl start turbovnc.service
 echo -e "${GREEN}Installing additional software...${NC}"
 apt install -y neovim
 
-# Get the IP address
-IP_ADDRESS=$(hostname -I | awk '{print $1}')
+# Get the IP address for eth1 interface
+IP_ADDRESS=$(ip -o -4 addr list eth1 | awk '{print $4}' | cut -d/ -f1)
 
 # Display system information
 echo -e "${GREEN}System setup complete. Here's your VPS information:${NC}"
