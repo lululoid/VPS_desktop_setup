@@ -102,9 +102,13 @@ sudo systemctl daemon-reload
 # Enable and start the VNC service
 sudo systemctl enable turbovnc.service
 sudo systemctl start turbovnc.service
+
 # Installing additional software
 echo -e "${GREEN}Installing additional software...${NC}"
 apt install -y neovim
+
+# Get the IP address
+IP_ADDRESS=$(hostname -I | awk '{print $1}')
 
 # Display system information
 echo -e "${GREEN}System setup complete. Here's your VPS information:${NC}"
@@ -112,4 +116,5 @@ echo -e "${GREEN}------------------------------------${NC}"
 hostnamectl
 echo -e "${GREEN}------------------------------------${NC}"
 echo -e "${GREEN}User '$USERNAME' has been created and granted sudo privileges.${NC}"
-echo -e "${GREEN}You can log in with: ssh $USERNAME@<server-ip>${NC}"
+echo -e "${GREEN}You can log in with: ssh $USERNAME@$IP_ADDRESS${NC}"
+echo -e "${GREEN}Server IP address: $IP_ADDRESS${NC}"
