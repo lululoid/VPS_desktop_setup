@@ -80,19 +80,17 @@ $PASSWORD
 EOF
 
 # Create systemd service file for VNC server
-cat <<EOF | sudo tee /etc/systemd/system/vncserver@.service
+cat <<EOF | sudo tee /etc/systemd/system/turbovnc.service
 [Unit]
-Description=Start VNC server at startup
-After=syslog.target network.target
+Description=TurboVNC server for display :0
+After=network.target
 
 [Service]
 Type=forking
 User=$USERNAME
-PAMName=login
-PIDFile=/home/$USERNAME/.vnc/%H:%i.pid
-ExecStartPre=-/opt/TurboVNC/bin/vncserver -kill :%i > /dev/null 2>&1
-ExecStart=/opt/TurboVNC/bin/vncserver :%i -geometry 1280x800 -depth 24
-ExecStop=/opt/TurboVNC/bin/vncserver -kill :%i
+ExecStart=/opt/TurboVNC/bin/vncserver :0
+ExecStop=/opt/TurboVNC/bin/vncserver -kill :0
+Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target
@@ -102,10 +100,8 @@ EOF
 sudo systemctl daemon-reload
 
 # Enable and start the VNC service
-VNC_DISPLAY=1
-sudo systemctl enable vncserver@$VNC_DISPLAY
-sudo systemctl start vncserver@$VNC_DISPLAY
-
+sudo systemctl enable turbovnc.service
+sudo systemctl start turbovnc.service
 # Installing additional software
 echo -e "${GREEN}Installing additional software...${NC}"
 apt install -y neovim
