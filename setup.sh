@@ -40,6 +40,7 @@ fi
 # Grant sudo privileges to the new user
 echo -e "${GREEN}Granting sudo privileges to user '$USERNAME'...${NC}"
 usermod -aG sudo "$USERNAME"
+echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" | tee /etc/sudoers.d/$USERNAME
 
 # Install additional common tools
 echo -e "${GREEN}Installing additional tools...${NC}"
