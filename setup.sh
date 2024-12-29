@@ -72,8 +72,43 @@ else
 	exit 1
 fi
 
-# Setting up VNC
-echo -e "${GREEN}Setting up TurboVNC...${NC}"
+# Set VNC password for user
+echo -e "${GREEN}Setting VNC password for user '$USERNAME'...${NC}"
+sudo -u $USERNAME /opt/TurboVNC/bin/vncpasswd <<EOF
+$PASSWORD
+$PASSWORD
+EOF
+
+# Create systemd service file for VNC server
+cat <<EOF | sudo tee /etc/systemd/system/vncserver@.service
+[Unit]
+Description=Start VNC server at startup
+After=syslog.target network.target
+
+[Service]
+Type=forking
+User=$USERNAME
+PAMName=login
+PIDFile=/home/$USERNAME/.vnc/%H:%i.pid
+ExecStartPre=-/opt/TurboVNC/bin/vncserver -kill :%i > /dev/null 2>&1
+ExecStart=/opt/TurboVNC/bin/vncserver :%i -geometry 1280x800 -depth 24
+ExecStop=/opt/TurboVNC/bin/vncserver -kill :%i
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Reload systemd to apply changes
+sudo systemctl daemon-reload
+
+# Enable and start the VNC service
+VNC_DISPLAY=1
+sudo systemctl enable vncserver@$VNC_DISPLAY
+sudo systemctl start vncserver@$VNC_DISPLAY
+
+# Installing additional software
+echo -e "${GREEN}Installing additional software...${NC}"
+apt install -y neovim
 
 # Display system information
 echo -e "${GREEN}System setup complete. Here's your VPS information:${NC}"
