@@ -8,11 +8,11 @@ fi
 
 # Update and upgrade system packages
 echo "Updating and upgrading system packages..."
-apt update && apt upgrade -y
+yes | apt update && apt upgrade -y
 
 # Install XFCE desktop environment
 echo "Installing XFCE desktop environment and goodies..."
-apt install -y xfce4 xfce4-goodies
+yes | apt install -y xfce4 xfce4-goodies
 
 # Create a new user named 'tomei'
 USERNAME="tomei"
@@ -20,7 +20,7 @@ if id "$USERNAME" &>/dev/null; then
 	echo "User '$USERNAME' already exists. Skipping user creation."
 else
 	echo "Creating user '$USERNAME'..."
-	adduser --gecos "" "$USERNAME"
+	yes "" | adduser --gecos "" "$USERNAME"
 	echo "User '$USERNAME' has been created successfully."
 fi
 
@@ -30,13 +30,13 @@ usermod -aG sudo "$USERNAME"
 
 # Install additional common tools
 echo "Installing additional tools..."
-apt install -y curl wget vim git unzip
+yes | apt install -y curl wget vim git unzip
 
 # Set up firewall (optional, allowing SSH and other common ports)
 echo "Setting up the UFW firewall..."
-apt install -y ufw
+yes | apt install -y ufw
 ufw allow OpenSSH
-ufw enable
+yes | ufw enable
 
 # Enable and start SSH service
 echo "Enabling and starting SSH service..."
@@ -50,7 +50,7 @@ if
 	wget -q -O- https://packagecloud.io/dcommander/turbovnc/gpgkey |
 		gpg --dearmor >/etc/apt/trusted.gpg.d/TurboVNC.gpg
 	curl -o /etc/apt/sources.list.d/TurboVNC.list https://raw.githubusercontent.com/TurboVNC/repo/main/TurboVNC.list
-	apt update && apt apt install turbovnc
+	apt update && yes | apt install turbovnc
 then
 	echo "TurboVNC repository list saved to /etc/apt/sources.list.d/TurboVNC.list"
 else
