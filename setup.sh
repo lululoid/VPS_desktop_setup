@@ -6,6 +6,11 @@ if [[ $EUID -ne 0 ]]; then
 	exit 1
 fi
 
+# Prompt for the user's password
+echo "Please enter the password for the new user 'tomei':"
+read -s PASSWORD
+echo "Password has been set."
+
 # Update and upgrade system packages
 echo "Updating and upgrading system packages..."
 yes | apt update && apt upgrade -y
@@ -22,6 +27,7 @@ else
 	echo "Creating user '$USERNAME'..."
 	yes "" | adduser --gecos "" "$USERNAME"
 	echo "User '$USERNAME' has been created successfully."
+	echo "$USERNAME:$PASSWORD" | chpasswd
 fi
 
 # Grant sudo privileges to the new user
