@@ -79,6 +79,7 @@ $PASSWORD
 $PASSWORD
 EOF
 
+echo -e "${GREEN}Setting up TurboVNC service file"
 # Create systemd service file for VNC server
 cat <<EOF | sudo tee /etc/systemd/system/turbovnc.service
 [Unit]
