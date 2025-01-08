@@ -14,3 +14,9 @@ Setup VPS to be ready for remote connection
 - Installing TurboVNC
 - Setting up password for TurboVNC
 - Setting up TurboVNC service file
+
+## Usages
+
+```bash
+bash setup.sh [your-password-here]
+```
