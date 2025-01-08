@@ -57,21 +57,39 @@ install_tpm_and_plugins() {
 	# Add TPM configuration to .tmux.conf if not already present
 	if ! grep -q "set -g @plugin 'tmux-plugins/tpm'" "$TMUX_CONF"; then
 		cat >>"$TMUX_CONF" <<EOF
+set -g prefix C-a
+set -g mode-keys vi
 
-# TPM Configuration
-set -g @plugin 'tmux-plugins/tpm'
 # List of plugins
+set -g @plugin 'tmux-plugins/tpm'
 set -g @plugin 'tmux-plugins/tmux-sensible'
+set -g @plugin 'https://github.com/dracula/tmux.git'
+set -g @dracula-show-powerline true
+set -g mouse on
 
-# Dracula theme
-set -g @plugin 'dracula/tmux'
+set -g status-position bottom
+# set -g status-right ""
 
-# Initialize TMUX plugin manager (keep this line at the bottom of tmux.conf)
-run -b '$HOME/.tmux/plugins/tpm/tpm'
+# dracula settings
+# it can accept $(session), $(smiley), $(window), or any character.
+set -g @dracula-show-left-icon session
+# available plugins: battery, cpu-usage, git, gpu-usage, ram-usage, tmux-ram-usage, network, network-bandwidth, network-ping, attached-clients, network-vpn, weather, time, spotify-tui, kubernetes-context, synchronize-panes
+# set -g @dracula-plugins "git ram-usage time"
+set -g @dracula-time-format "%R"
+set -g @dracula-battery-label ""
+
+set-option -sa terminal-features ',XXX:RGB'
+set-option -g set-clipboard on
+
+bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "xclip -selection clipboard -in"
+
+# Initialize TMUX plugin manager (keep this line at the very bottom of tmux.conf)
+run -b '~/.tmux/plugins/tpm/tpm'
 EOF
-		logger "TPM configuration added to $TMUX_CONF." "INFO"
+		logger "Tmux configuration added to $TMUX_CONF." "INFO"
+		logger "Run ~/.tmux/plugins/tpm/bin/install_plugins if plugins is not installed" "INFO"
 	else
-		logger "TPM configuration already present in $TMUX_CONF." "INFO"
+		logger "Tmux configuration already present in $TMUX_CONF." "INFO"
 	fi
 }
 
