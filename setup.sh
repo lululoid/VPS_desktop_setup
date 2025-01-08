@@ -306,6 +306,24 @@ EOF
 	echo "Swap file service created and started successfully."
 }
 
+setup_swappiness() {
+	SWAP_VALUE="vm.swappiness=$1"
+
+	# Check if the line already exists in the file
+	if grep -q "^vm.swappiness" /etc/sysctl.conf; then
+		# Update the existing line
+		sudo sed -i "s/^vm.swappiness=.*/$SWAP_VALUE/" /etc/sysctl.conf
+	else
+		# Add the line to the end of the file
+		echo "$SWAP_VALUE" | sudo tee -a /etc/sysctl.conf
+	fi
+
+	# Apply the changes
+	sudo sysctl -p
+
+	logger "Swappiness value set to 100 successfully."
+}
+
 main() {
 	local TOTALMEM
 
@@ -323,6 +341,7 @@ main() {
 	install_oh_my_zsh
 	setup_terminal
 	make_swap $((TOTALMEM_KB / 2)) /.swapfile
+	setup_swappiness 100
 	create_swap_service
 
 	# Get the IP address for eth1 interface
