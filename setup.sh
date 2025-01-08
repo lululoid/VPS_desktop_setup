@@ -140,13 +140,17 @@ EOF
 [Unit]
 Description=TurboVNC server for display :0
 After=network.target
+Conflicts=shutdown.target
 
 [Service]
 Type=forking
 User=$USERNAME
 ExecStart=/opt/TurboVNC/bin/vncserver :0
 ExecStop=/opt/TurboVNC/bin/vncserver -kill :0
+ExecStopPost=/bin/echo "TurboVNC server stopped."
 Restart=on-failure
+TimeoutSec=30
+KillMode=control-group
 
 [Install]
 WantedBy=multi-user.target
@@ -172,7 +176,7 @@ setup_softwares() {
 	echo "deb [signed-by=/usr/share/keyrings/google-linux-keyring.gpg arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list >/dev/null
 
 	# Update and install Google Chrome
-	sudo apt update && sudo apt install -y google-chrome-stable snapd lz4
+	sudo apt update && sudo apt install -y google-chrome-stable snapd lz4 zsh
 	snap install celeste
 }
 
