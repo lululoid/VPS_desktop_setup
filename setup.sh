@@ -7,8 +7,6 @@ YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-TOTALMEM=$(free -k | awk '/^Mem:/ {print $2}')K
-
 logger() {
 	local message level
 	message=$1
@@ -55,12 +53,12 @@ setup_sources_list() {
 
 	logger "Setting up the Debian source list for $version_codename..." "INFO"
 	cat <<EOF | tee $sources_list
-deb http://deb.debian.org/debian $version_codename main contrib non-free
-deb-src http://deb.debian.org/debian $version_codename main contrib non-free
-deb http://deb.debian.org/debian $version_codename-updates main contrib non-free
-deb-src http://deb.debian.org/debian $version_codename-updates main contrib non-free
-deb http://security.debian.org/debian-security $version_codename-security main contrib non-free
-deb-src http://security.debian.org/debian-security $version_codename-security main contrib non-free
+deb http://deb.debian.org/debian $version_codename main contrib non-free non-free-firmware
+deb-src http://deb.debian.org/debian $version_codename main contrib non-free non-free-firmware
+deb http://deb.debian.org/debian $version_codename-updates main contrib non-free non-free-firmware
+deb-src http://deb.debian.org/debian $version_codename-updates main contrib non-free non-free-firmware
+deb http://security.debian.org/debian-security $version_codename-security main contrib non-free non-free-firmware
+deb-src http://security.debian.org/debian-security $version_codename-security main contrib non-free non-free-firmware
 EOF
 }
 
@@ -169,7 +167,7 @@ setup_softwares() {
 
 	logger "Installing chrome..." "INFO"
 	# Download the Google Linux package signing key and place it in the keyrings directory
-	wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo tee /usr/share/keyrings/google-linux-keyring.gpg >/dev/null
+	wget -q -O- https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor | sudo tee /usr/share/keyrings/google-linux-keyring.gpg >/dev/null
 
 	# Add the Google Chrome repository to the sources list with a keyring reference
 	echo "deb [signed-by=/usr/share/keyrings/google-linux-keyring.gpg arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list >/dev/null
@@ -197,8 +195,8 @@ resize_zram() {
 	[ -z "$use_dedup" ] && use_dedup=1
 
 	zram_block=/dev/zram$zram_id
-	echo 1 >/sys/block/zram"${zram_id}"/use_dedup
-	echo "$size" >/sys/block/zram"${zram_id}"/disksize
+	echo 1 >"/sys/block/zram${zram_id}/use_dedup"
+	echo "$size" >"/sys/block/zram${zram_id}/disksize"
 	if mkswap "$zram_block"; then
 		logger "ZRAM${zram_id} is successfully created"
 	else
@@ -222,6 +220,9 @@ create_zram_service() {
 	# Create the ZRAM setup script
 	cat <<EOF | sudo tee /usr/local/bin/setup_zram.sh
 #!/bin/bash
+# Calculate the full size of the total memory in bytes
+TOTALMEM=$(free -b | awk '/^Mem:/ {print $2}')
+
 $(declare -f logger)
 $(declare -f add_zram)
 $(declare -f resize_zram)
