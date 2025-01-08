@@ -172,7 +172,7 @@ setup_softwares() {
 	echo "deb [signed-by=/usr/share/keyrings/google-linux-keyring.gpg arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list >/dev/null
 
 	# Update and install Google Chrome
-	sudo apt update && sudo apt install -y google-chrome-stable snapd
+	sudo apt update && sudo apt install -y google-chrome-stable snapd lz4
 	snap install celeste
 }
 
