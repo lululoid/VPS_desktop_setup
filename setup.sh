@@ -176,8 +176,7 @@ setup_softwares() {
 	echo "deb [signed-by=/usr/share/keyrings/google-linux-keyring.gpg arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list >/dev/null
 
 	# Update and install Google Chrome
-	sudo apt update && sudo apt install -y google-chrome-stable snapd lz4 zsh
-	snap install celeste
+	sudo apt update && sudo apt install -y google-chrome-stable lz4 zsh tmux
 }
 
 add_zram() {
@@ -260,6 +259,16 @@ EOF
 	logger "ZRAM service created and started" "INFO"
 }
 
+install_oh_my_zsh() {
+	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+}
+
+setup_terminal() {
+	git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k"
+	sed -i 's/ZSH_THEME=".*"/ZSH_THEME="powerlevel10k\/powerlevel10k"/' "$HOME/.zshrc"
+
+}
+
 main() {
 	# Call the function to set up the sources list
 	setup_sources_list
@@ -270,6 +279,8 @@ main() {
 	setup_turbo_vnc
 	setup_softwares
 	create_zram_service
+	install_oh_my_zsh
+	setup_terminal
 
 	# Get the IP address for eth1 interface
 	IP_ADDRESS=$(ip -o -4 addr list eth1 | awk '{print $4}' | cut -d/ -f1)
