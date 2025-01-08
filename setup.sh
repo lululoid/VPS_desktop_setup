@@ -165,7 +165,6 @@ setup_softwares() {
 	logger "Installing additional software..." "INFO"
 	apt install -y neovim
 
-	logger "Installing chrome..." "INFO"
 	# Download the Google Linux package signing key and place it in the keyrings directory
 	wget -q -O- https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor | sudo tee /usr/share/keyrings/google-linux-keyring.gpg >/dev/null
 
@@ -173,7 +172,8 @@ setup_softwares() {
 	echo "deb [signed-by=/usr/share/keyrings/google-linux-keyring.gpg arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list >/dev/null
 
 	# Update and install Google Chrome
-	sudo apt update && sudo apt install -y google-chrome-stable
+	sudo apt update && sudo apt install -y google-chrome-stable snapd
+	snap install celeste
 }
 
 add_zram() {
