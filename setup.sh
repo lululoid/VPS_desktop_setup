@@ -95,7 +95,7 @@ setup_user() {
 setup_common_tools() {
 	# Install additional common tools
 	logger "Installing additional tools..." "INFO"
-	yes | apt install -y curl wget vim git unzip
+	yes | apt install -y curl wget vim git unzip sudo
 }
 
 setup_firewall() {
