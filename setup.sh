@@ -180,6 +180,7 @@ setup_softwares() {
 
 add_zram() {
 	local zram_id
+	modprobe zram
 	zram_id=$(cat /sys/class/zram-control/hot_add)
 	if [ -n "$zram_id" ]; then
 		echo "$zram_id"
