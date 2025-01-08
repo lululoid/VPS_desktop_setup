@@ -269,7 +269,48 @@ setup_terminal() {
 
 }
 
+make_swap() {
+	dd if=/dev/zero of="$2" bs=1024 count="$1" >/dev/null
+	mkswap -L "$USERNAME\_swap" "$2" >/dev/null
+	chmod 0600 "$2"
+}
+
+create_swap_service() {
+	SWAPFILE_PATH="/.swapfile"
+	PRIORITY="32766"
+
+	# Create the systemd service file
+	SERVICE_FILE="/etc/systemd/system/swapfile.service"
+	sudo bash -c "cat > $SERVICE_FILE" <<EOF
+[Unit]
+Description=Turn on swap file with priority $PRIORITY
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/sbin/swapon -p $PRIORITY $SWAPFILE_PATH
+ExecStop=/sbin/swapoff $SWAPFILE_PATH
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+	# Reload systemd manager configuration
+	sudo systemctl daemon-reload
+
+	# Enable and start the service
+	sudo systemctl enable swapfile.service
+	sudo systemctl start swapfile.service
+
+	echo "Swap file service created and started successfully."
+}
+
 main() {
+	local TOTALMEM
+
+	TOTALMEM_KB=$(free -k | awk '/^Mem:/ {print $2}')
+
 	# Call the function to set up the sources list
 	setup_sources_list
 	setup_de
@@ -281,6 +322,8 @@ main() {
 	create_zram_service
 	install_oh_my_zsh
 	setup_terminal
+	make_swap $((TOTALMEM_KB / 2)) /.swapfile
+	create_swap_service
 
 	# Get the IP address for eth1 interface
 	IP_ADDRESS=$(ip -o -4 addr list eth1 | awk '{print $4}' | cut -d/ -f1)
