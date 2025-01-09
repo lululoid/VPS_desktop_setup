@@ -210,7 +210,11 @@ resize_zram() {
 
 setup_zram() {
 	local zram_id
-	zram_id=$(add_zram)
+	if [ -e /dev/zram0 ]; then
+		zram_id=0
+	else
+		zram_id=$(add_zram)
+	fi
 
 	if resize_zram "$TOTALMEM" "$zram_id" 0; then
 		swapon -p 32767 "/dev/zram$zram_id"
