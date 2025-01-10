@@ -274,9 +274,10 @@ setup_terminal() {
 }
 
 make_swap() {
+	logger "Creating swap..."
 	dd if=/dev/zero of="$2" bs=1024 count="$1" >/dev/null
-	mkswap -L "$USERNAME\_swap" "$2" >/dev/null
 	chmod 0600 "$2"
+	mkswap -L "$USERNAME\_swap" "$2" >/dev/null
 }
 
 create_swap_service() {
