@@ -176,7 +176,7 @@ setup_softwares() {
 	echo "deb [signed-by=/usr/share/keyrings/google-linux-keyring.gpg arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list >/dev/null
 
 	# Update and install Google Chrome
-	sudo apt update && sudo apt install -y google-chrome-stable lz4 zsh tmux
+	sudo apt update && sudo apt install -y google-chrome-stable lz4 zsh tmux adb
 }
 
 add_zram() {
@@ -329,7 +329,7 @@ setup_swappiness() {
 }
 
 main() {
-	local TOTALMEM
+	local TOTALMEM_KB
 
 	TOTALMEM_KB=$(free -k | awk '/^Mem:/ {print $2}')
 
