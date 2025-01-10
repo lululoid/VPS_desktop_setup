@@ -101,3 +101,4 @@ install_tpm_and_plugins
 curl -O https://raw.githubusercontent.com/angristan/openvpn-install/master/openvpn-install.sh
 chmod +x openvpn-install.sh
 ./openvpn-install.sh
+sudo systemctl start turbovnc.service
