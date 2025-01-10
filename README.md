@@ -17,6 +17,14 @@ Setup VPS to be ready for remote connection
 
 ## Usages
 
-```bash
-bash setup.sh [your-password-here]
-```
+1. setup.sh
+
+   ```bash
+   bash setup.sh [your-password-here]
+   ```
+
+1. setup_user.sh
+
+   ```bash
+   bash <(curl -s https://raw.githubusercontent.com/lululoid/VPS_desktop_setup/refs/heads/main/setup_user.sh)
+   ```
