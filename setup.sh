@@ -209,10 +209,8 @@ resize_zram() {
 }
 
 setup_zram() {
-	local zram_id
-	if [ -e /dev/zram0 ]; then
-		zram_id=0
-	else
+	local zram_id=0
+	if [ ! -b /dev/zram0 ]; then
 		zram_id=$(add_zram)
 	fi
 
