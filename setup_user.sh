@@ -87,12 +87,17 @@ bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "xclip -selection c
 run -b '~/.tmux/plugins/tpm/tpm'
 EOF
 		logger "Tmux configuration added to $TMUX_CONF." "INFO"
-		logger "Run ~/.tmux/plugins/tpm/bin/install_plugins if plugins is not installed" "INFO"
 	else
 		logger "Tmux configuration already present in $TMUX_CONF." "INFO"
 	fi
+	# Manually install plugins when necessary
+	[ ! -e ~/.tmux/plugins/tmux-sensible ] && ~/.tmux/plugins/tpm/bin/install_plugins
 }
 
 install_oh_my_zsh
 setup_terminal
 install_tpm_and_plugins
+# Setup OPENVPN
+curl -O https://raw.githubusercontent.com/angristan/openvpn-install/master/openvpn-install.sh
+chmod +x openvpn-install.sh
+./openvpn-install.sh
