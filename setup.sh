@@ -39,11 +39,32 @@ fi
 
 # Check if password is provided as an argument
 if [ -z "$1" ]; then
-	logger "Usage: $0 <password>" "ERROR"
+	logger "Usage: $0 <password> [-b <backup_link>]" "ERROR"
 	exit 1
 fi
 
 PASSWORD="$1"
+BACKUP_LINK=""
+
+# Parse optional arguments
+shift
+while getopts "b:" opt; do
+	case $opt in
+	b)
+		BACKUP_LINK="$OPTARG"
+		;;
+	*)
+		logger "Usage: $0 <password> [-b <backup_link>]" "ERROR"
+		exit 1
+		;;
+	esac
+done
+
+# Log the provided options
+logger "Password provided" "INFO"
+if [ -n "$BACKUP_LINK" ]; then
+	logger "Backup link: $BACKUP_LINK" "INFO"
+fi
 
 # Function to set up the Debian source list based on version
 setup_sources_list() {
@@ -161,7 +182,6 @@ EOF
 
 	# Enable and start the VNC service
 	sudo systemctl enable turbovnc.service
-	sudo systemctl start turbovnc.service
 }
 
 setup_softwares() {
@@ -176,7 +196,7 @@ setup_softwares() {
 	echo "deb [signed-by=/usr/share/keyrings/google-linux-keyring.gpg arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list >/dev/null
 
 	# Update and install Google Chrome
-	sudo apt update && sudo apt install -y google-chrome-stable lz4 zsh tmux adb
+	sudo apt update && sudo apt install -y google-chrome-stable lz4 zsh tmux adb libgtk2.0-0
 }
 
 add_zram() {
@@ -327,6 +347,26 @@ setup_swappiness() {
 	logger "Swappiness value set to 100 successfully."
 }
 
+restore_backup() {
+	local downloaded_file BACKUP_LINK=$1
+
+	logger "Downloading backup from $BACKUP_LINK..."
+
+	{
+		wget --content-disposition "$BACKUP_LINK"
+		# shellcheck disable=SC2012
+		downloaded_file=$(ls -t | head -n1)
+		logger "Extracting backup($downloaded_file)..."
+		tar -I lz4 -xvf backup_file.tar.lz4 -C / --recursive-unlink --preserve-permissions
+		logger "Removing downloaded file($downloaded_file)..."
+		rm "$downloaded_file"
+		logger "$downloaded_file removed" "WARNING"
+	} && return 0
+
+	logger "Restore failed" "ERROR"
+	return 1
+}
+
 main() {
 	local TOTALMEM_KB
 
@@ -346,6 +386,7 @@ main() {
 	make_swap $((TOTALMEM_KB / 2)) /.swapfile
 	setup_swappiness 100
 	create_swap_service
+	[ -n "$BACKUP_LINK" ] && restore_backup "$BACKUP_LINK"
 
 	# Get the IP address for eth1 interface
 	IP_ADDRESS=$(ip -o -4 addr list eth1 | awk '{print $4}' | cut -d/ -f1)
