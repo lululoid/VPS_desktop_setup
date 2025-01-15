@@ -367,24 +367,42 @@ restore_backup() {
 	return 1
 }
 
+# Prompt user for each function
+ask_user() {
+	local prompt_message=$1
+	local function_name=$2
+
+	read -p "$prompt_message [Y/n]: " yn
+	yn=${yn:-y}
+	if [[ $yn =~ ^[Yy]$ ]]; then
+		$function_name
+		return 0
+	else
+		echo "Skipping $function_name"
+		return 1
+	fi
+}
+
 main() {
 	local TOTALMEM_KB
 
 	TOTALMEM_KB=$(free -k | awk '/^Mem:/ {print $2}')
 
 	# Call the function to set up the sources list
-	setup_sources_list
-	setup_de
-	setup_user
+	ask_user "Do you want to set up the sources list?" setup_sources_list
+	ask_user "Setup XFCE?" setup_de
+	ask_user "Setup user?" setup_user
 	setup_common_tools
-	setup_ssh
-	setup_turbo_vnc
+	ask_user "Setup ssh?" setup_ssh
+	ask_user "Do you want to set up TurboVNC?" setup_turbo_vnc
 	setup_softwares
-	create_zram_service
+	ask_user "Create ZRAM?" create_zram_service
 	install_oh_my_zsh
 	setup_terminal
-	make_swap $((TOTALMEM_KB / 2)) /.swapfile
-	setup_swappiness 100
+	ask_user "Create swap?" && {
+		make_swap $((TOTALMEM_KB / 2)) /.swapfile
+		setup_swappiness 100
+	}
 	create_swap_service
 	[ -n "$BACKUP_LINK" ] && restore_backup "$BACKUP_LINK"
 
