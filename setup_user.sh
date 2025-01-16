@@ -66,6 +66,8 @@ set -g @plugin 'tmux-plugins/tmux-sensible'
 set -g @plugin 'https://github.com/dracula/tmux.git'
 set -g @dracula-show-powerline true
 set -g mouse on
+set -g default-terminal 'tmux-256color'
+set -ga terminal-overrides ",*:Tc"
 
 set -g status-position bottom
 # set -g status-right ""
