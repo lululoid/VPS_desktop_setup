@@ -31,6 +31,22 @@ logger() {
 	esac
 }
 
+# Prompt user for each function
+ask_user() {
+	local prompt_message=$1
+	local function_name=$2
+
+	read -p "$prompt_message [Y/n]: " yn
+	yn=${yn:-y}
+	if [[ $yn =~ ^[Yy]$ ]]; then
+		$function_name
+		return 0
+	else
+		echo "Skipping $function_name"
+		return 1
+	fi
+}
+
 # Check for root privileges
 if [[ $EUID -ne 0 ]]; then
 	logger "This script must be run as root" "ERROR"
@@ -182,6 +198,9 @@ EOF
 
 	# Enable and start the VNC service
 	sudo systemctl enable turbovnc.service
+	ask_user "Start TurboVNC now?" && sudo systemctl start turbovnc.service
+	logger "Linking TurboVNC binaries to /usr/local/bin ..."
+	ln -s /opt/TurboVNC/bin/* /usr/local/bin
 }
 
 setup_softwares() {
@@ -367,22 +386,6 @@ restore_backup() {
 	return 1
 }
 
-# Prompt user for each function
-ask_user() {
-	local prompt_message=$1
-	local function_name=$2
-
-	read -p "$prompt_message [Y/n]: " yn
-	yn=${yn:-y}
-	if [[ $yn =~ ^[Yy]$ ]]; then
-		$function_name
-		return 0
-	else
-		echo "Skipping $function_name"
-		return 1
-	fi
-}
-
 main() {
 	local TOTALMEM_KB
 
@@ -402,8 +405,8 @@ main() {
 	ask_user "Create swap?" && {
 		make_swap $((TOTALMEM_KB / 2)) /.swapfile
 		setup_swappiness 100
+		create_swap_service
 	}
-	create_swap_service
 	[ -n "$BACKUP_LINK" ] && restore_backup "$BACKUP_LINK"
 
 	# Get the IP address for eth1 interface
