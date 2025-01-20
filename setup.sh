@@ -31,6 +31,29 @@ logger() {
 	esac
 }
 
+function select_an_option() {
+	local max_options=$1
+	local default_option=${2:-1}
+	local response_var=$3
+	local response
+
+	while true; do
+		read -r -p "${Y}select an option (Default ${default_option}): ${W}" response
+		response=${response:-$default_option}
+
+		if [[ $response =~ ^[0-9]+$ ]] && ((response >= 1 && response <= max_options)); then
+			echo
+			print_success "Continuing with answer: $response"
+			sleep 0.2
+			eval "$response_var=$response"
+			break
+		else
+			echo
+			print_failed " Invalid input, Please enter a number between 1 and $max_options"
+		fi
+	done
+}
+
 # Prompt user for each function
 ask_user() {
 	local prompt_message=$1
@@ -104,9 +127,32 @@ setup_de() {
 	logger "Updating and upgrading system packages..." "INFO"
 	yes | apt update && apt upgrade -y
 
-	# Install XFCE desktop environment
-	logger "Installing XFCE desktop environment and goodies..." "INFO"
-	yes | apt install -y xfce4 xfce4-goodies
+	install_xfce() {
+
+		# Install XFCE desktop environment
+		logger "Installing XFCE desktop environment and goodies..." "INFO"
+		yes | apt install -y xfce4 xfce4-goodies
+	}
+
+	install_openbox() {
+		logger "Installing Openbox desktop environment..." "INFO"
+		# Thanks to @leomarcov from https://github.com/leomarcov/debian-openbox
+		bash <(curl https://github.com/leomarcov/debian-openbox/raw/refs/heads/master/install) -a 2-13,15-16,20,22,29,33
+	}
+
+	logger "$(
+		cat <<EOF
+Select Desktop Environment
+1. XFCE 
+2. Openbox
+EOF
+	)"
+	select_an_option 2 1 choosen_de
+
+	case "$choosen_de" in
+	1) install_xfce ;;
+	*) install_openbox ;;
+	esac
 }
 
 setup_user() {
