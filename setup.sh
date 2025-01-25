@@ -123,10 +123,6 @@ EOF
 }
 
 setup_de() {
-	# Update and upgrade system packages
-	logger "Updating and upgrading system packages..." "INFO"
-	yes | apt update && apt upgrade -y
-
 	install_xfce() {
 
 		# Install XFCE desktop environment
@@ -147,7 +143,11 @@ Select Desktop Environment
 2. Openbox
 EOF
 	)"
-	select_an_option 2 1 choosen_de
+	select_an_option 2 2 choosen_de
+
+	# Update and upgrade system packages
+	logger "Updating and upgrading system packages..." "INFO"
+	yes | apt update && apt upgrade -y
 
 	case "$choosen_de" in
 	1) install_xfce ;;
@@ -174,9 +174,8 @@ setup_user() {
 }
 
 setup_common_tools() {
-	# Install additional common tools
 	logger "Installing additional tools..." "INFO"
-	yes | apt install -y curl wget vim git unzip sudo
+	yes | apt install -y curl wget vim git unzip sudo gpg
 }
 
 setup_firewall() {
@@ -439,12 +438,12 @@ main() {
 
 	# Call the function to set up the sources list
 	ask_user "Do you want to set up the sources list?" setup_sources_list
-	ask_user "Setup XFCE?" setup_de
-	ask_user "Setup user?" setup_user
 	setup_common_tools
+	setup_softwares
+	ask_user "Setup desktop environment?" setup_de
+	ask_user "Setup user?" setup_user
 	ask_user "Setup ssh?" setup_ssh
 	ask_user "Do you want to set up TurboVNC?" setup_turbo_vnc
-	setup_softwares
 	ask_user "Create ZRAM?" create_zram_service
 	install_oh_my_zsh
 	setup_terminal
