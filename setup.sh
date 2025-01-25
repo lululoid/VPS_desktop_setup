@@ -218,7 +218,7 @@ EOF
 
 	logger "Setting up TurboVNC service file" "INFO"
 	# Create systemd service file for VNC server
-	cat <<EOF | sudo tee /etc/systemd/system/turbovnc.service
+	cat <<EOF | tee /etc/systemd/system/turbovnc.service
 [Unit]
 Description=TurboVNC server for display :0
 After=network.target
@@ -239,11 +239,11 @@ WantedBy=multi-user.target
 EOF
 
 	# Reload systemd to apply changes
-	sudo systemctl daemon-reload
+	systemctl daemon-reload
 
 	# Enable and start the VNC service
-	sudo systemctl enable turbovnc.service
-	ask_user "Start TurboVNC now?" && sudo systemctl start turbovnc.service
+	systemctl enable turbovnc.service
+	ask_user "Start TurboVNC now?" && systemctl start turbovnc.service
 	logger "Linking TurboVNC binaries to /usr/local/bin ..."
 	ln -s /opt/TurboVNC/bin/* /usr/local/bin
 }
@@ -254,13 +254,13 @@ setup_softwares() {
 	apt install -y neovim
 
 	# Download the Google Linux package signing key and place it in the keyrings directory
-	wget -q -O- https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor | sudo tee /usr/share/keyrings/google-linux-keyring.gpg >/dev/null
+	wget -q -O- https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor | tee /usr/share/keyrings/google-linux-keyring.gpg >/dev/null
 
 	# Add the Google Chrome repository to the sources list with a keyring reference
-	echo "deb [signed-by=/usr/share/keyrings/google-linux-keyring.gpg arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list >/dev/null
+	echo "deb [signed-by=/usr/share/keyrings/google-linux-keyring.gpg arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | tee /etc/apt/sources.list.d/google-chrome.list >/dev/null
 
 	# Update and install Google Chrome
-	sudo apt update && sudo apt install -y google-chrome-stable lz4 zsh tmux adb libgtk2.0-0
+	apt update && apt install -y google-chrome-stable lz4 zsh tmux adb libgtk2.0-0
 }
 
 add_zram() {
@@ -307,7 +307,7 @@ setup_zram() {
 
 create_zram_service() {
 	# Create the ZRAM setup script
-	cat <<EOF | sudo tee /usr/local/bin/setup_zram.sh
+	cat <<EOF | tee /usr/local/bin/setup_zram.sh
 #!/bin/bash
 # Calculate the full size of the total memory in bytes
 TOTALMEM=$(free -b | awk '/^Mem:/ {print $2}')
@@ -320,10 +320,10 @@ setup_zram
 EOF
 
 	# Make the ZRAM setup script executable
-	sudo chmod +x /usr/local/bin/setup_zram.sh
+	chmod +x /usr/local/bin/setup_zram.sh
 
 	# Create systemd service file for ZRAM
-	cat <<EOF | sudo tee /etc/systemd/system/zram.service
+	cat <<EOF | tee /etc/systemd/system/zram.service
 [Unit]
 Description=Setup ZRAM Service
 After=multi-user.target
@@ -338,9 +338,9 @@ WantedBy=multi-user.target
 EOF
 
 	# Enable and start the ZRAM service
-	sudo systemctl daemon-reload
-	sudo systemctl enable zram.service
-	sudo systemctl start zram.service
+	systemctl daemon-reload
+	systemctl enable zram.service
+	systemctl start zram.service
 
 	logger "ZRAM service created and started" "INFO"
 }
@@ -368,7 +368,7 @@ create_swap_service() {
 
 	# Create the systemd service file
 	SERVICE_FILE="/etc/systemd/system/swapfile.service"
-	sudo bash -c "cat > $SERVICE_FILE" <<EOF
+	bash -c "cat > $SERVICE_FILE" <<EOF
 [Unit]
 Description=Turn on swap file with priority $PRIORITY
 After=network.target
@@ -384,11 +384,11 @@ WantedBy=multi-user.target
 EOF
 
 	# Reload systemd manager configuration
-	sudo systemctl daemon-reload
+	systemctl daemon-reload
 
 	# Enable and start the service
-	sudo systemctl enable swapfile.service
-	sudo systemctl start swapfile.service
+	systemctl enable swapfile.service
+	systemctl start swapfile.service
 
 	echo "Swap file service created and started successfully."
 }
@@ -399,14 +399,14 @@ setup_swappiness() {
 	# Check if the line already exists in the file
 	if grep -q "^vm.swappiness" /etc/sysctl.conf; then
 		# Update the existing line
-		sudo sed -i "s/^vm.swappiness=.*/$SWAP_VALUE/" /etc/sysctl.conf
+		sed -i "s/^vm.swappiness=.*/$SWAP_VALUE/" /etc/sysctl.conf
 	else
 		# Add the line to the end of the file
-		echo "$SWAP_VALUE" | sudo tee -a /etc/sysctl.conf
+		echo "$SWAP_VALUE" | tee -a /etc/sysctl.conf
 	fi
 
 	# Apply the changes
-	sudo sysctl -p
+	sysctl -p
 
 	logger "Swappiness value set to 100 successfully."
 }
