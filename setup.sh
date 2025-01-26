@@ -6,6 +6,8 @@ RED='\033[0;31m'
 YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
+# Create a new user named 'tomei'
+USERNAME="tomei"
 
 logger() {
 	local message level
@@ -42,14 +44,12 @@ function select_an_option() {
 		response=${response:-$default_option}
 
 		if [[ $response =~ ^[0-9]+$ ]] && ((response >= 1 && response <= max_options)); then
-			echo
-			print_success "Continuing with answer: $response"
+			logger "Continuing with answer: $response"
 			sleep 0.2
 			eval "$response_var=$response"
 			break
 		else
-			echo
-			print_failed " Invalid input, Please enter a number between 1 and $max_options"
+			logger " Invalid input, Please enter a number between 1 and $max_options" "ERROR"
 		fi
 	done
 }
@@ -59,13 +59,14 @@ ask_user() {
 	local prompt_message=$1
 	local function_name=$2
 
-	read -p "$prompt_message [Y/n]: " yn
+	logger "$prompt_message [Y/n]: "
+	read -p "" yn
 	yn=${yn:-y}
 	if [[ $yn =~ ^[Yy]$ ]]; then
 		$function_name
 		return 0
 	else
-		echo "Skipping $function_name"
+		logger "Skipping $function_name"
 		return 1
 	fi
 }
@@ -131,9 +132,11 @@ setup_de() {
 	}
 
 	install_openbox() {
+
 		logger "Installing Openbox desktop environment..." "INFO"
+		git clone https://github.com/leomarcov/debian-openbox.git
 		# Thanks to @leomarcov from https://github.com/leomarcov/debian-openbox
-		bash <(curl https://github.com/leomarcov/debian-openbox/raw/refs/heads/master/install) -a 2-13,15-16,20,22,29,33
+		./debian-openbox/install -a 2-13,15-16,20,22,29,33 -y
 	}
 
 	logger "$(
@@ -145,10 +148,6 @@ EOF
 	)"
 	select_an_option 2 2 choosen_de
 
-	# Update and upgrade system packages
-	logger "Updating and upgrading system packages..." "INFO"
-	yes | apt update && apt upgrade -y
-
 	case "$choosen_de" in
 	1) install_xfce ;;
 	*) install_openbox ;;
@@ -156,8 +155,6 @@ EOF
 }
 
 setup_user() {
-	# Create a new user named 'tomei'
-	USERNAME="tomei"
 	if id "$USERNAME" &>/dev/null; then
 		logger "User '$USERNAME' already exists. Skipping user creation." "INFO"
 	else
@@ -227,8 +224,8 @@ Conflicts=shutdown.target
 [Service]
 Type=forking
 User=$USERNAME
-ExecStart=/opt/TurboVNC/bin/vncserver :0
-ExecStop=/opt/TurboVNC/bin/vncserver -kill :0
+ExecStart=vncserver :0
+ExecStop=vncserver -kill :0
 ExecStopPost=/bin/echo "TurboVNC server stopped."
 Restart=on-failure
 TimeoutSec=30
@@ -260,7 +257,8 @@ setup_softwares() {
 	echo "deb [signed-by=/usr/share/keyrings/google-linux-keyring.gpg arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | tee /etc/apt/sources.list.d/google-chrome.list >/dev/null
 
 	# Update and install Google Chrome
-	apt update && apt install -y google-chrome-stable lz4 zsh tmux adb libgtk2.0-0
+	apt update && apt install -y google-chrome-stable lz4 zsh tmux adb libgtk2.0-0 flatpak
+	flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 }
 
 add_zram() {
@@ -436,12 +434,16 @@ main() {
 
 	TOTALMEM_KB=$(free -k | awk '/^Mem:/ {print $2}')
 
+	# Update and upgrade system packages
+	logger "Updating and upgrading system packages..." "INFO"
+	yes | apt update && apt upgrade -y
+
 	# Call the function to set up the sources list
 	ask_user "Do you want to set up the sources list?" setup_sources_list
 	setup_common_tools
 	setup_softwares
-	ask_user "Setup desktop environment?" setup_de
 	ask_user "Setup user?" setup_user
+	ask_user "Setup desktop environment?" setup_de
 	ask_user "Setup ssh?" setup_ssh
 	ask_user "Do you want to set up TurboVNC?" setup_turbo_vnc
 	ask_user "Create ZRAM?" create_zram_service
