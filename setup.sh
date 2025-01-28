@@ -6,8 +6,6 @@ RED='\033[0;31m'
 YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
-# Create a new user named 'tomei'
-USERNAME="tomei"
 
 logger() {
 	local message level
@@ -79,7 +77,7 @@ fi
 
 # Check if password is provided as an argument
 if [ -z "$1" ]; then
-	logger "Usage: $0 <password> [-b <backup_link>]" "ERROR"
+	logger "Usage: $0 <password> [-u <user-name>] [-b <backup_link>]" "ERROR"
 	exit 1
 fi
 
@@ -88,13 +86,16 @@ BACKUP_LINK=""
 
 # Parse optional arguments
 shift
-while getopts "b:" opt; do
+while getopts "u:b:" opt; do
 	case $opt in
+	u)
+		USERNAME="$OPTARG"
+		;;
 	b)
 		BACKUP_LINK="$OPTARG"
 		;;
 	*)
-		logger "Usage: $0 <password> [-b <backup_link>]" "ERROR"
+		logger "Usage: $0 <password> [-u <username>] [-b <backup_link>]" "ERROR"
 		exit 1
 		;;
 	esac
@@ -155,6 +156,11 @@ EOF
 }
 
 setup_user() {
+	if [ -z "$USERNAME" ]; then
+		logger "Enter user name: "
+		read USERNAME
+	fi
+
 	if id "$USERNAME" &>/dev/null; then
 		logger "User '$USERNAME' already exists. Skipping user creation." "INFO"
 	else
