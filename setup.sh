@@ -194,6 +194,35 @@ setup_ssh() {
 	logger "Enabling and starting SSH service..." "INFO"
 	systemctl enable ssh
 	systemctl start ssh
+
+	# Define the SSHD configuration file
+	SSHD_CONFIG="/etc/ssh/sshd_config"
+
+	# Define the keepalive settings
+	INTERVAL=60
+	COUNT=5
+
+	# Backup the original SSHD configuration file
+	cp "$SSHD_CONFIG" "${SSHD_CONFIG}.bak"
+
+	# Use sed to uncomment and update ClientAliveInterval
+	if grep -q "^#ClientAliveInterval" "$SSHD_CONFIG"; then
+		sed -i "s/^#ClientAliveInterval.*/ClientAliveInterval $INTERVAL/" "$SSHD_CONFIG"
+	else
+		sed -i "s/^ClientAliveInterval.*/ClientAliveInterval $INTERVAL/" "$SSHD_CONFIG"
+	fi
+
+	# Use sed to uncomment and update ClientAliveCountMax
+	if grep -q "^#ClientAliveCountMax" "$SSHD_CONFIG"; then
+		sed -i "s/^#ClientAliveCountMax.*/ClientAliveCountMax $COUNT/" "$SSHD_CONFIG"
+	else
+		sed -i "s/^ClientAliveCountMax.*/ClientAliveCountMax $COUNT/" "$SSHD_CONFIG"
+	fi
+
+	# Restart the SSH service to apply changes
+	systemctl restart sshd
+
+	logger "SSH server configuration updated successfully."
 }
 
 setup_turbo_vnc() {
