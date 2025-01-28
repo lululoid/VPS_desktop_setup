@@ -20,7 +20,8 @@ Setup VPS to be ready for remote connection
 1. setup.sh
 
    ```bash
-   bash setup.sh [your-password-here]
+    sudo apt update && sudo apt install -y curl
+   bash <(curl -s https://raw.githubusercontent.com/lululoid/VPS_desktop_setup/refs/heads/main/setup.sh) <your-password> [-u <user-name>] [-b <backup_link>]
    ```
 
 1. setup_user.sh
