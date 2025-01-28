@@ -440,12 +440,12 @@ main() {
 
 	TOTALMEM_KB=$(free -k | awk '/^Mem:/ {print $2}')
 
+	# Call the function to set up the sources list
+	ask_user "Do you want to set up the sources list?" setup_sources_list
+
 	# Update and upgrade system packages
 	logger "Updating and upgrading system packages..." "INFO"
 	yes | apt update && apt upgrade -y
-
-	# Call the function to set up the sources list
-	ask_user "Do you want to set up the sources list?" setup_sources_list
 	setup_common_tools
 	setup_softwares
 	ask_user "Setup user?" setup_user
