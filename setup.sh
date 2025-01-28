@@ -241,14 +241,15 @@ KillMode=control-group
 WantedBy=multi-user.target
 EOF
 
+	logger "Linking TurboVNC binaries to /usr/local/bin ..."
+	ln -s /opt/TurboVNC/bin/* /usr/local/bin
+
 	# Reload systemd to apply changes
 	systemctl daemon-reload
 
 	# Enable and start the VNC service
 	systemctl enable turbovnc.service
 	ask_user "Start TurboVNC now?" && systemctl start turbovnc.service
-	logger "Linking TurboVNC binaries to /usr/local/bin ..."
-	ln -s /opt/TurboVNC/bin/* /usr/local/bin
 }
 
 setup_softwares() {
