@@ -77,7 +77,7 @@ fi
 
 # Check if password is provided as an argument
 if [ -z "$1" ]; then
-	logger "Usage: $0 <password> [-u <user-name>] [-b <backup_link>]" "ERROR"
+	logger "Usage: $0 <password> [-u <user_name>] [-b <backup_link> <tar.xz_file_link>]" "ERROR"
 	exit 1
 fi
 
@@ -95,7 +95,7 @@ while getopts "u:b:" opt; do
 		BACKUP_LINK="$OPTARG"
 		;;
 	*)
-		logger "Usage: $0 <password> [-u <username>] [-b <backup_link>]" "ERROR"
+		logger "Usage: $0 <password> [-u <user_name>] [-b <backup_link> <tar.xz_file_link>]" "ERROR"
 		exit 1
 		;;
 	esac
@@ -426,7 +426,7 @@ restore_backup() {
 		# shellcheck disable=SC2012
 		downloaded_file=$(ls -t | head -n1)
 		logger "Extracting backup($downloaded_file)..."
-		tar -I lz4 -xvf backup_file.tar.lz4 -C / --recursive-unlink --preserve-permissions
+		tar -I -xf backup_file.tar.xz -C / --recursive-unlink --preserve-permissions
 		logger "Removing downloaded file($downloaded_file)..."
 		rm "$downloaded_file"
 		logger "$downloaded_file removed" "WARNING"
