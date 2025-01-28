@@ -282,18 +282,33 @@ EOF
 }
 
 setup_softwares() {
+	install_chrome() {
+		# Download the Google Linux package signing key and place it in the keyrings directory
+		wget -q -O- https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor | tee /usr/share/keyrings/google-linux-keyring.gpg >/dev/null
+
+		# Add the Google Chrome repository to the sources list with a keyring reference
+		echo "deb [signed-by=/usr/share/keyrings/google-linux-keyring.gpg arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | tee /etc/apt/sources.list.d/google-chrome.list >/dev/null
+		apt update && apt install -y google-chrome-stable
+	}
+
 	# Installing additional software
 	logger "Installing additional software..." "INFO"
-	apt install -y neovim
+	logger "$(
+		cat <<EOF
+Select browser:
+	1. Google chrome (Cannot use adblock)
+	2. Firefox
+EOF
+	)"
+	select_an_option 2 2 browser_choice
 
-	# Download the Google Linux package signing key and place it in the keyrings directory
-	wget -q -O- https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor | tee /usr/share/keyrings/google-linux-keyring.gpg >/dev/null
+	if [ $browser_choice -eq 2 ]; then
+		apt install firefox || apt install firefox-esr
+	else
+		install_chrome
+	fi
 
-	# Add the Google Chrome repository to the sources list with a keyring reference
-	echo "deb [signed-by=/usr/share/keyrings/google-linux-keyring.gpg arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | tee /etc/apt/sources.list.d/google-chrome.list >/dev/null
-
-	# Update and install Google Chrome
-	apt update && apt install -y google-chrome-stable lz4 zsh tmux adb libgtk2.0-0 flatpak
+	apt install -y lz4 zsh tmux adb libgtk2.0-0 flatpak neovim
 	flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 }
 
