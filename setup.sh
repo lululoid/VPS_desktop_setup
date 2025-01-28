@@ -272,6 +272,8 @@ EOF
 
 	logger "Linking TurboVNC binaries to /usr/local/bin ..."
 	ln -s /opt/TurboVNC/bin/* /usr/local/bin
+	logger "Linking TurboVNC manual"
+	ln -s /opt/TurboVNC/man/man1/* /usr/share/man/man1
 
 	# Reload systemd to apply changes
 	systemctl daemon-reload
