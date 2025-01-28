@@ -31,6 +31,23 @@ logger() {
 	esac
 }
 
+# Prompt user for each function
+ask_user() {
+	local prompt_message=$1
+	local function_name=$2
+
+	logger "$prompt_message [Y/n]: "
+	read yn
+	yn=${yn:-y}
+	if [[ $yn =~ ^[Yy]$ ]]; then
+		$function_name
+		return 0
+	else
+		logger "Skipping $function_name"
+		return 1
+	fi
+}
+
 install_oh_my_zsh() {
 	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 }
@@ -68,6 +85,7 @@ set -g @dracula-show-powerline true
 set -g mouse on
 set -g default-terminal 'tmux-256color'
 set -ga terminal-overrides ",*:Tc"
+set-option -g default-shell /usr/bin/zsh
 
 set -g status-position bottom
 # set -g status-right ""
@@ -99,8 +117,11 @@ EOF
 install_oh_my_zsh
 setup_terminal
 install_tpm_and_plugins
+
 # Setup OPENVPN
-curl -O https://raw.githubusercontent.com/angristan/openvpn-install/master/openvpn-install.sh
-chmod +x openvpn-install.sh
-./openvpn-install.sh
-sudo systemctl start turbovnc.service
+ask_user "Install openvpn server?" && {
+	curl -O https://raw.githubusercontent.com/angristan/openvpn-install/master/openvpn-install.sh
+	chmod +x openvpn-install.sh
+	./openvpn-install.sh
+	sudo systemctl start turbovnc.service
+}

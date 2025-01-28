@@ -60,7 +60,7 @@ ask_user() {
 	local function_name=$2
 
 	logger "$prompt_message [Y/n]: "
-	read -p "" yn
+	read yn
 	yn=${yn:-y}
 	if [[ $yn =~ ^[Yy]$ ]]; then
 		$function_name
