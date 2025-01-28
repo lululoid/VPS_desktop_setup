@@ -110,8 +110,10 @@ EOF
 	else
 		logger "Tmux configuration already present in $TMUX_CONF." "INFO"
 	fi
-	# Manually install plugins when necessary
-	[ ! -e ~/.tmux/plugins/tmux-sensible ] && ~/.tmux/plugins/tpm/bin/install_plugins
+
+	#Install dracula theme
+	git clone https://github.com/dracula/tmux.git "$HOME/.tmux/plugins/tmux" &&
+		logger "Dracula theme for tmux is installed"
 }
 
 install_oh_my_zsh
