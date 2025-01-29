@@ -9,14 +9,19 @@ Setup VPS to be ready for remote connection
 
 - Setting up password for user
 - Update and upgrade system
-- Installing XFCE desktop environment and goodies
+- Installing desktop environment (Openbox or XFCE)
 - Creating user
-- Installing additional tools: curl wget vim git unzip
+- Installing additional tools: curl wget vim git unzip sudo gpg
+- Installing additional softwares: browser(firefox or google chrome) lz4 zsh tmux adb libgtk2.0-0 neovim alacarte
 - Setting up UFW firewall for ssh connection
 - Enable and start ssh
 - Installing TurboVNC
 - Setting up password for TurboVNC
 - Setting up TurboVNC service file
+- Setup ZRAM and it's service
+- Setup oh-my-zsh and powerlevel10k
+- Setup swap 1/2 of RAM and set swappiness to 100
+- Create swap service
 
 ## Usages
 

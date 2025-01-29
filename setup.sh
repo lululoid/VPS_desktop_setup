@@ -298,7 +298,7 @@ setup_softwares() {
 	logger "$(
 		cat <<EOF
 Select browser:
-	1. Google chrome (Cannot use adblock)
+	1. Google chrome (Cannot use Ublock origin)
 	2. Firefox
 EOF
 	)"
