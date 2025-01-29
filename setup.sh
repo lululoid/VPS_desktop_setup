@@ -310,8 +310,7 @@ EOF
 		install_chrome
 	fi
 
-	apt install -y lz4 zsh tmux adb libgtk2.0-0 flatpak neovim
-	flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+	apt install -y lz4 zsh tmux adb libgtk2.0-0 neovim alacarte
 }
 
 add_zram() {
