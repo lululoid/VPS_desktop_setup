@@ -310,7 +310,7 @@ EOF
 		install_chrome
 	fi
 
-	apt install -y lz4 zsh tmux adb libgtk2.0-0 neovim alacarte
+	apt install -y lz4 zsh tmux adb libgtk2.0-0 neovim alacarte xfce4-terminal
 }
 
 add_zram() {
@@ -499,8 +499,7 @@ main() {
 	ask_user "Setup ssh?" setup_ssh
 	ask_user "Do you want to set up TurboVNC?" setup_turbo_vnc
 	ask_user "Create ZRAM?" create_zram_service
-	install_oh_my_zsh
-	setup_terminal
+	ask_user "Install ohmyzsh and powerlevel10k? Type exit on new shell after ohmyzsh is installed" install_oh_my_zsh && setup_terminal
 	ask_user "Create swap?" && {
 		make_swap $((TOTALMEM_KB / 2)) /.swapfile
 		setup_swappiness 100
