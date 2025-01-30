@@ -215,8 +215,8 @@ setup_ssh() {
 	SSHD_CONFIG="/etc/ssh/sshd_config"
 
 	# Define the keepalive settings
-	INTERVAL=60
-	COUNT=5
+	INTERVAL=300
+	COUNT=50
 
 	# Backup the original SSHD configuration file
 	cp "$SSHD_CONFIG" "${SSHD_CONFIG}.bak"
@@ -233,6 +233,12 @@ setup_ssh() {
 		sed -i "s/^#ClientAliveCountMax.*/ClientAliveCountMax $COUNT/" "$SSHD_CONFIG"
 	else
 		sed -i "s/^ClientAliveCountMax.*/ClientAliveCountMax $COUNT/" "$SSHD_CONFIG"
+	fi
+
+	if grep -q "^#TCPKeepAlive" "$SSHD_CONFIG"; then
+		sed -i "s/^#\(TCPKeepAlive\).*/\1 yes $COUNT/" "$SSHD_CONFIG"
+	else
+		sed -i "s/^\(TCPKeepAlive\).*/\1 yes $COUNT/" "$SSHD_CONFIG"
 	fi
 
 	# Restart the SSH service to apply changes
