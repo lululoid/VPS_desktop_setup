@@ -38,7 +38,12 @@ function select_an_option() {
 	local response
 
 	while true; do
-		read -r -p "${Y}select an option (Default ${default_option}): ${W}" response
+		if $NOPROMPT; then
+			true
+		else
+			read -r -p "${Y}select an option (Default ${default_option}): ${W}" response
+		fi
+
 		response=${response:-$default_option}
 
 		if [[ $response =~ ^[0-9]+$ ]] && ((response >= 1 && response <= max_options)); then
@@ -60,7 +65,7 @@ ask_user() {
 	logger "$prompt_message [Y/n]: "
 	read yn
 	yn=${yn:-y}
-	if [[ $yn =~ ^[Yy]$ ]]; then
+	if [[ $yn =~ ^[Yy]$ ]] || $NOPROMPT; then
 		$function_name
 		return 0
 	else
@@ -75,9 +80,17 @@ if [[ $EUID -ne 0 ]]; then
 	exit 1
 fi
 
+usage_message="Usage: $0 <password> [-y] [-u <user_name>] [-b <backup_link> <tar.xz_file_link>]
+
+Parameters:
+	<password>            - The required password to execute the script.
+	[-y]                  - Optional flag to skip prompt and use the default option.
+	[-u <user_name>]      - Optional parameter to specify the user name.
+	[-b <backup_link> <tar.xz_file_link>] - Optional parameters to provide a backup link and the tar.xz file link.
+"
 # Check if password is provided as an argument
 if [ -z "$1" ]; then
-	logger "Usage: $0 <password> [-u <user_name>] [-b <backup_link> <tar.xz_file_link>]" "ERROR"
+	logger "$usage_message" "ERROR"
 	exit 1
 fi
 
@@ -86,7 +99,7 @@ BACKUP_LINK=""
 
 # Parse optional arguments
 shift
-while getopts "u:b:" opt; do
+while getopts "u:b:y:" opt; do
 	case $opt in
 	u)
 		USERNAME="$OPTARG"
@@ -94,8 +107,11 @@ while getopts "u:b:" opt; do
 	b)
 		BACKUP_LINK="$OPTARG"
 		;;
+	y)
+		NOPROMPT=true
+		;;
 	*)
-		logger "Usage: $0 <password> [-u <user_name>] [-b <backup_link> <tar.xz_file_link>]" "ERROR"
+		logger "$usage_message" "ERROR"
 		exit 1
 		;;
 	esac
@@ -305,7 +321,7 @@ EOF
 	select_an_option 2 2 browser_choice
 
 	if [ $browser_choice -eq 2 ]; then
-		apt install firefox || apt install firefox-esr
+		apt install -y firefox || apt install -y firefox-esr
 	else
 		install_chrome
 	fi
