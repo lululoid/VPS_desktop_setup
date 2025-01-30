@@ -296,7 +296,17 @@ EOF
 
 	# Enable and start the VNC service
 	systemctl enable turbovnc.service
-	ask_user "Start TurboVNC now?" && systemctl start turbovnc.service
+	logger "Start TurboVNC now?"
+	select_an_option 2 1 is_turbovnc_start
+	case "$is_turbovnc_start" in
+	1)
+		systemctl start turbovnc.service &&
+			logger "TurboVNC is started for user $USERNAME"
+		;;
+	*)
+		true
+		;;
+	esac
 }
 
 setup_softwares() {
