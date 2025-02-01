@@ -432,7 +432,8 @@ EOF
 }
 
 install_oh_my_zsh() {
-	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+	# Set to not automatically enter zsh shell
+	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | sed 's/exec zsh -l/# exec zsh -l/')"
 }
 
 setup_terminal() {
