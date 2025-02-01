@@ -99,7 +99,7 @@ BACKUP_LINK=""
 
 # Parse optional arguments
 shift
-while getopts "u:b:y:" opt; do
+while getopts "u:b:y" opt; do
 	case $opt in
 	u)
 		USERNAME="$OPTARG"
@@ -342,7 +342,7 @@ EOF
 		install_chrome
 	fi
 
-	apt install -y lz4 zsh tmux adb libgtk2.0-0 neovim alacarte xfce4-terminal
+	apt install -y lz4 zsh tmux adb libgtk2.0-0 neovim alacarte xfce4-terminal pulseaudio
 	curl -s https://api.github.com/repos/jesseduffield/lazygit/releases/latest | grep "https://.*Linux_x86_64.tar.gz" | cut -d : -f 2,3 | tr -d '"' | wget -qi -
 	tar -xf lazygit_*.tar.gz -C /usr/bin --preserve-permissions
 	rm lazygit_*.tar.gz
