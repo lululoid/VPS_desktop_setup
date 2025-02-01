@@ -62,7 +62,7 @@ ask_user() {
 	local prompt_message=$1
 	local function_name=$2
 
-	logger "$prompt_message [Y/n]: "
+	echo -e -n "${GREEN}$prompt_message [Y/n]: ${NC}"
 	$NOPROMPT || read yn
 	yn=${yn:-y}
 	if [[ $yn =~ ^[Yy]$ ]] || $NOPROMPT; then
@@ -343,7 +343,8 @@ EOF
 	fi
 
 	apt install -y lz4 zsh tmux adb libgtk2.0-0 neovim alacarte xfce4-terminal pulseaudio
-	curl -s https://api.github.com/repos/jesseduffield/lazygit/releases/latest | grep "https://.*Linux_x86_64.tar.gz" | cut -d : -f 2,3 | tr -d '"' | wget -qi -
+	curl -s https://api.github.com/repos/jesseduffield/lazygit/releases/latest | grep "https://.*Linux_x86_64.tar.gz" | cut -d : -f 2,3 | tr -d '"' | wget -qi - &&
+		logger "Lazygit installed."
 	tar -xf lazygit_*.tar.gz -C /usr/bin --preserve-permissions
 	rm lazygit_*.tar.gz
 }
