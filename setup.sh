@@ -265,7 +265,7 @@ setup_turbo_vnc() {
 
 	# Set VNC password for user
 	logger "Setting VNC password for user '$USERNAME'..." "INFO"
-	sudo -u $USERNAME /opt/TurboVNC/bin/vncpasswd <<EOF
+	sudo -u "$USERNAME" bash -c /opt/TurboVNC/bin/vncpasswd <<EOF
 $PASSWORD
 $PASSWORD
 EOF
