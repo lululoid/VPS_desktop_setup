@@ -349,6 +349,17 @@ EOF
 	rm lazygit_*.tar.gz
 }
 
+setup_kvm() {
+	# Check for kvm support
+	apt-get install cpu-checker
+	supported_cpus=$(egrep -c '(vmx|svm)' /proc/cpuinfo)
+
+	if [[ $(kvm-ok | grep -q "INFO: /dev/kvm exists") && $supported_cpus -gt 0 ]]; then
+		apt-get install qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils
+	fi
+
+}
+
 add_zram() {
 	local zram_id
 	modprobe zram
@@ -543,6 +554,7 @@ main() {
 		create_swap_service
 	}
 	[ -n "$BACKUP_LINK" ] && restore_backup "$BACKUP_LINK"
+	ask_user "Setup KVM? Useful for android studio" setup_kvm
 
 	# Get the IP address for eth1 interface
 	IP_ADDRESS=$(ip -o -4 addr list eth1 | awk '{print $4}' | cut -d/ -f1)
