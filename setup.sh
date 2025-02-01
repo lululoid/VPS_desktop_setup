@@ -236,9 +236,9 @@ setup_ssh() {
 	fi
 
 	if grep -q "^#TCPKeepAlive" "$SSHD_CONFIG"; then
-		sed -i "s/^#\(TCPKeepAlive\).*/\1 yes $COUNT/" "$SSHD_CONFIG"
+		sed -i "s/^#\(TCPKeepAlive\).*/\1 yes/" "$SSHD_CONFIG"
 	else
-		sed -i "s/^\(TCPKeepAlive\).*/\1 yes $COUNT/" "$SSHD_CONFIG"
+		sed -i "s/^\(TCPKeepAlive\).*/\1 yes/" "$SSHD_CONFIG"
 	fi
 
 	# Restart the SSH service to apply changes
