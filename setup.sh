@@ -343,6 +343,9 @@ EOF
 	fi
 
 	apt install -y lz4 zsh tmux adb libgtk2.0-0 neovim alacarte xfce4-terminal
+	curl -s https://api.github.com/repos/jesseduffield/lazygit/releases/latest | grep "https://.*Linux_x86_64.tar.gz" | cut -d : -f 2,3 | tr -d '"' | wget -qi -
+	tar -xf lazygit_*.tar.gz -C /usr/bin --preserve-permissions
+	rm lazygit_*.tar.gz
 }
 
 add_zram() {
@@ -550,6 +553,7 @@ main() {
 	logger "User '$USERNAME' has been created and granted sudo privileges." "INFO"
 	logger "You can log in with: ssh $USERNAME@$IP_ADDRESS" "INFO"
 	logger "Server IP address: $IP_ADDRESS" "INFO"
+	ask_user "Reboot now?" && shutdown -r now
 }
 
 main
