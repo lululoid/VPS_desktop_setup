@@ -80,12 +80,13 @@ if [[ $EUID -ne 0 ]]; then
 	exit 1
 fi
 
-usage_message="Usage: $0 <password> [-y] [-u <user_name>] [-b <backup_link> <tar.xz_file_link>]
+usage_message="Usage: $0 <password> [-y] [-u <user_name>] [-b <backup_link> <tar.xz_file_link>] [--reboot]
 
 Parameters:
 	<password>            - The required password to execute the script.
 	[-y]                  - Optional flag to skip prompt and use the default option.
 	[-u <user_name>]      - Optional parameter to specify the user name.
+	[--reboot]            - Reboot after finished installation.
 	[-b <backup_link> <tar.xz_file_link>] - Optional parameters to provide a backup link and the tar.xz file link.
 "
 # Check if password is provided as an argument
@@ -109,6 +110,22 @@ while getopts "u:b:y" opt; do
 		;;
 	y)
 		NOPROMPT=true
+		;;
+	*)
+		logger "$usage_message" "ERROR"
+		exit 1
+		;;
+	esac
+done
+
+# Shift to the next argument
+shift $((OPTIND - 1))
+
+# Check for long options
+for arg in "$@"; do
+	case $arg in
+	--reboot)
+		REBOOT=true
 		;;
 	*)
 		logger "$usage_message" "ERROR"
@@ -567,7 +584,17 @@ main() {
 	logger "User '$USERNAME' has been created and granted sudo privileges." "INFO"
 	logger "You can log in with: ssh $USERNAME@$IP_ADDRESS" "INFO"
 	logger "Server IP address: $IP_ADDRESS" "INFO"
-	ask_user "Reboot now?" && shutdown -r now
+	echo -e -n "${GREEN}Reboot now?${NC}" && {
+		read yn
+		yn=${yn:-y}
+		if [[ $yn =~ ^[Yy]$ ]] || $NOPROMPT; then
+			shutdown -r now
+			return 0
+		else
+			logger "Skipping reboot"
+			return 1
+		fi
+	}
 }
 
 main
