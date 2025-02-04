@@ -22,6 +22,7 @@ Setup VPS to be ready for remote connection
 - Setup oh-my-zsh and powerlevel10k
 - Setup swap 1/2 of RAM and set swappiness to 100
 - Create swap service
+- Setup KVM for virtualization like in android studio
 
 ## Usages
 
