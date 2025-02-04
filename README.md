@@ -29,12 +29,21 @@ Setup VPS to be ready for remote connection
 1. setup.sh
 
    ```bash
-    sudo apt update && sudo apt install -y curl
-   bash <(curl -s https://raw.githubusercontent.com/lululoid/VPS_desktop_setup/refs/heads/main/setup.sh) <your_password> [-y] [-u <user_name>] [-b <backup_link> <tar.xz_file_link>]
+   sudo apt update && sudo apt install -y curl
+   bash <(curl -s https://raw.githubusercontent.com/lululoid/VPS_desktop_setup/refs/heads/main/setup.sh) <your_password> [-y] [-u <user_name>] [-b <backup_link> <tar.xz_file_link>] [--reboot]
+
+    Usage: $0 <password> [-y] [-u <user_name>] [-b <backup_link> <tar.xz_file_link>] [--reboot]
+
+    Parameters:
+     <password> - The required password to execute the script.
+     [-y] - Optional flag to skip prompt and use the default option.
+     [-u <user_name>] - Optional parameter to specify the user name.
+     [--reboot] - Reboot after finished installation.
+     [-b <backup_link> <tar.xz_file_link>] - Optional parameters to provide a backup link and the tar.xz file link.
    ```
 
 1. setup_user.sh
 
-   ```bash
-   bash <(curl -s https://raw.githubusercontent.com/lululoid/VPS_desktop_setup/refs/heads/main/setup_user.sh)
-   ```
+```bash
+bash <(curl -s https://raw.githubusercontent.com/lululoid/VPS_desktop_setup/refs/heads/main/setup_user.sh)
+```
