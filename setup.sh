@@ -359,7 +359,7 @@ EOF
 		install_chrome
 	fi
 
-	apt install -y lz4 zsh tmux adb libgtk2.0-0 neovim alacarte xfce4-terminal pulseaudio
+	apt install -y lz4 zsh tmux adb libgtk2.0-0 neovim alacarte xfce4-terminal
 	curl -s https://api.github.com/repos/jesseduffield/lazygit/releases/latest | grep "https://.*Linux_x86_64.tar.gz" | cut -d : -f 2,3 | tr -d '"' | wget -qi - &&
 		logger "Lazygit installed."
 	tar -xf lazygit_*.tar.gz -C /usr/bin --preserve-permissions
@@ -556,7 +556,7 @@ main() {
 
 	# Update and upgrade system packages
 	logger "Updating and upgrading system packages..." "INFO"
-	yes | apt update && apt upgrade -y
+	apt update && apt upgrade -y
 	setup_common_tools
 	setup_softwares
 	ask_user "Setup user?" setup_user
