@@ -370,11 +370,11 @@ EOF
 
 setup_kvm() {
 	# Check for kvm support
-	apt-get install cpu-checker
+	apt-get install -y cpu-checker
 	supported_cpus=$(egrep -c '(vmx|svm)' /proc/cpuinfo)
 
 	if [[ $(kvm-ok | grep -q "INFO: /dev/kvm exists") && $supported_cpus -gt 0 ]]; then
-		apt-get install qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils
+		apt-get install -y qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils
 	fi
 
 }
@@ -564,7 +564,6 @@ main() {
 	ask_user "Setup user?" setup_user
 	ask_user "Setup desktop environment?" setup_de
 	ask_user "Setup ssh?" setup_ssh
-	ask_user "Do you want to set up TurboVNC?" setup_turbo_vnc
 	ask_user "Create ZRAM?" create_zram_service
 	ask_user "Install ohmyzsh and powerlevel10k? Type exit on new shell after ohmyzsh is installed" install_oh_my_zsh && setup_terminal
 	ask_user "Create swap?" && {
@@ -572,6 +571,7 @@ main() {
 		setup_swappiness 100
 		create_swap_service
 	}
+	ask_user "Do you want to set up TurboVNC?" setup_turbo_vnc
 	[ -n "$BACKUP_LINK" ] && restore_backup "$BACKUP_LINK"
 	ask_user "Setup KVM? Useful for android studio" setup_kvm
 
@@ -586,7 +586,7 @@ main() {
 	logger "User '$USERNAME' has been created and granted sudo privileges." "INFO"
 	logger "You can log in with: ssh $USERNAME@$IP_ADDRESS" "INFO"
 	logger "Server IP address: $IP_ADDRESS" "INFO"
-	echo -e -n "${GREEN}Reboot now?${NC}" && {
+	echo -e -n "${GREEN}Reboot now?Y/n${NC}" && {
 		"$REBOOT" || read yn
 		yn=${yn:-y}
 		if [[ $yn =~ ^[Yy]$ ]] || $NOPROMPT; then
