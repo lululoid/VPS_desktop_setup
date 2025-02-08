@@ -97,6 +97,8 @@ fi
 
 PASSWORD="$1"
 BACKUP_LINK=""
+REBOOT=false
+NOPROMPT=false
 
 # Parse optional arguments
 shift
@@ -585,7 +587,7 @@ main() {
 	logger "You can log in with: ssh $USERNAME@$IP_ADDRESS" "INFO"
 	logger "Server IP address: $IP_ADDRESS" "INFO"
 	echo -e -n "${GREEN}Reboot now?${NC}" && {
-		read yn
+		"$REBOOT" || read yn
 		yn=${yn:-y}
 		if [[ $yn =~ ^[Yy]$ ]] || $NOPROMPT; then
 			shutdown -r now
