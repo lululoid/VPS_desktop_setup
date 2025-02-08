@@ -586,17 +586,24 @@ main() {
 	logger "User '$USERNAME' has been created and granted sudo privileges." "INFO"
 	logger "You can log in with: ssh $USERNAME@$IP_ADDRESS" "INFO"
 	logger "Server IP address: $IP_ADDRESS" "INFO"
-	echo -e -n "${GREEN}Reboot now?Y/n${NC}" && {
-		"$REBOOT" || read yn
-		yn=${yn:-y}
-		if [[ $yn =~ ^[Yy]$ ]] || $NOPROMPT; then
-			shutdown -r now
-			return 0
-		else
-			logger "Skipping reboot"
-			return 1
-		fi
-	}
+
+	# Prompt for reboot
+	echo -e -n "${GREEN}Reboot now? Y/n: ${NC}"
+	read -r yn
+
+	# Default to 'y' if no input is provided
+	yn=${yn:-y}
+
+	# Check if the input is 'Y' or 'y', or if $REBOOT is set
+	if [ "$REBOOT" = true ] || [[ $yn =~ ^[Yy]$ ]]; then
+		# Reboot the system
+		shutdown -r now
+		return 0
+	else
+		# Log skipping the reboot
+		logger "Skipping reboot"
+		return 1
+	fi
 }
 
 main
