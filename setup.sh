@@ -173,6 +173,19 @@ setup_de() {
 		git clone https://github.com/leomarcov/debian-openbox.git
 		# Thanks to @leomarcov from https://github.com/leomarcov/debian-openbox
 		./debian-openbox/install -a 2-13,15-16,20,22,29,33 -y
+
+		# Define the path to the script you want to modify
+		TARGET_SCRIPT="/usr/local/bin/xstartup.turbovnc"
+
+		# Use sed to add 'openbox' to the SESSIONS variable, but only inside the block starting with 'if [ "$TVNC_WM" = "" ]; then'
+		sed -i '/if \[\$TVNC_WM\] = ""\]; then/,/fi/{
+  /SESSIONS="gnome ubuntu/ s/$/ openbox/
+}' "$TARGET_SCRIPT"
+
+		# Optional: To make sure `openbox` is only added once in that section
+		sed -i '/if \[\$TVNC_WM\] = ""\]; then/,/fi/{
+  s/SESSIONS="\([^"]*\)"/SESSIONS="\1 openbox"/
+}' "$TARGET_SCRIPT"
 	}
 
 	logger "$(
