@@ -30,29 +30,20 @@ logger() {
 	esac
 }
 
-add_zram() {
-	local zram_id
-	modprobe zram
-	zram_id=$(cat /sys/class/zram-control/hot_add)
-	if [ -n "$zram_id" ]; then
-		echo "$zram_id"
-		return 0
-	fi
-	return 1
-}
-
 resize_zram() {
 	local size=$1
-	local zram_id=$2
 	local zram_block use_dedup
-	use_dedup=$3
-	[ -z "$use_dedup" ] && use_dedup=1
+	use_dedup=$2
 
-	zram_block=/dev/zram$zram_id
-	echo 1 >"/sys/block/zram${zram_id}/use_dedup"
-	echo "$size" >"/sys/block/zram${zram_id}/disksize"
+	zram_block=/dev/zram0
+	if [ "$use_dedup" == "true" ]; then 
+		echo 1 >"/sys/block/zram0/use_dedup"
+	fi
+
+	echo "$size" >"/sys/block/zram0/disksize"
+	
 	if mkswap "$zram_block"; then
-		logger "ZRAM${zram_id} is successfully created"
+		logger "ZRAM is successfully created"
 		return 0
 	else
 		logger "ZRAM creation failed" "ERROR"
@@ -61,13 +52,17 @@ resize_zram() {
 }
 
 setup_zram() {
-	local zram_id=0
+	local size use_dedup 
+	size=$1
+	use_dedup=$2
+
 	if [ ! -b /dev/zram0 ]; then
-		zram_id=$(add_zram)
+		modprobe zram
+		cat /sys/class/zram-control/hot_add
 	fi
 
-	if resize_zram "$TOTALMEM" "$zram_id" 0; then
-		swapon -p 32767 "/dev/zram$zram_id"
+	if resize_zram "$size" "$use_dedup"; then
+		swapon -p 32767 "/dev/zram0"
 		return 0
 	fi
 	return 1
@@ -81,7 +76,6 @@ create_zram_service() {
 TOTALMEM=$(free -b | awk '/^Mem:/ {print $2}')
 
 $(declare -f logger)
-$(declare -f add_zram)
 $(declare -f resize_zram)
 $(declare -f setup_zram)
 setup_zram
@@ -109,24 +103,43 @@ EOF
 	systemctl daemon-reload
 	systemctl enable zram.service
 	systemctl start zram.service
-
 	logger "ZRAM service created and started" "INFO"
 }
 
 main() {
+	local swappiness use_dedup=false
+
 	if [ "$(id -u)" -ne 0 ]; then
 		logger "This script must be run as root. Exiting." "ERROR"
 		exit 1
 	fi
 
+	# Parse options
+	while [[ $# -gt 0 ]]; do
+		case $1 in
+		-s|--swappiness)
+			swappiness=$2
+			shift 2
+			;;
+		-use_dedup)
+			use_dedup=true
+			shift
+			;;
+		*)
+			logger "Unknown option: $1" "WARNING"
+			shift
+			;;
+		esac
+	done
+
 	# Calculate the full size of the total memory in bytes
 	TOTALMEM=$(free -b | awk '/^Mem:/ {print $2}')
 
-	setup_zram
+	setup_zram "$TOTALMEM" "$use_dedup"
 
-	# Check if a swappiness value is provided as an argument
-	if [ $# -ge 1 ]; then
-		setup_swappiness "$1"
+	# Set swappiness if provided
+	if [ -n "$swappiness" ]; then
+		setup_swappiness "$swappiness"
 	else
 		logger "No swappiness value provided, skipping swappiness setup." "INFO"
 	fi
