@@ -68,17 +68,39 @@ setup_zram() {
 	return 1
 }
 
+setup_swappiness() {
+	SWAP_VALUE="vm.swappiness=$1"
+
+	# Check if the line already exists in the file
+	if grep -q "^vm.swappiness" /etc/sysctl.conf; then
+		# Update the existing line
+		sed -i "s/^vm.swappiness=.*/$SWAP_VALUE/" /etc/sysctl.conf
+	else
+		# Add the line to the end of the file
+		echo "$SWAP_VALUE" | tee -a /etc/sysctl.conf
+	fi
+
+	# Apply the changes
+	sysctl -p
+
+	logger "Swappiness value set to 100 successfully."
+}
+
 create_zram_service() {
 	# Create the ZRAM setup script
 	cat <<EOF | tee /usr/local/bin/setup_zram.sh
 #!/bin/bash
 # Calculate the full size of the total memory in bytes
-TOTALMEM=$(free -b | awk '/^Mem:/ {print $2}')
+TOTALMEM=\$(free -b | awk '/^Mem:/ {print \$2}')
 
 $(declare -f logger)
 $(declare -f resize_zram)
 $(declare -f setup_zram)
-setup_zram
+
+# Read use_dedup value from a persistent file
+USE_DEDUP=\$(cat /etc/zram_use_dedup 2>/dev/null || echo "false")
+
+setup_zram "\$TOTALMEM" "\$USE_DEDUP"
 EOF
 
 	# Make the ZRAM setup script executable
@@ -132,10 +154,8 @@ main() {
 		esac
 	done
 
-	# Calculate the full size of the total memory in bytes
-	TOTALMEM=$(free -b | awk '/^Mem:/ {print $2}')
-
-	setup_zram "$TOTALMEM" "$use_dedup"
+	echo "$use_dedup" > /etc/zram_use_dedup
+	create_zram_service
 
 	# Set swappiness if provided
 	if [ -n "$swappiness" ]; then
