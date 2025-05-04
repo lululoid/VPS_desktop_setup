@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Define color
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 YELLOW='\033[0;33m'
@@ -54,6 +53,7 @@ resize_zram() {
 	echo "$size" >"/sys/block/zram${zram_id}/disksize"
 	if mkswap "$zram_block"; then
 		logger "ZRAM${zram_id} is successfully created"
+		return 0
 	else
 		logger "ZRAM creation failed" "ERROR"
 		return 1
@@ -73,27 +73,9 @@ setup_zram() {
 	return 1
 }
 
-setup_swappiness() {
-	SWAP_VALUE="vm.swappiness=$1"
-
-	# Check if the line already exists in the file
-	if grep -q "^vm.swappiness" /etc/sysctl.conf; then
-		# Update the existing line
-		sudo sed -i "s/^vm.swappiness=.*/$SWAP_VALUE/" /etc/sysctl.conf
-	else
-		# Add the line to the end of the file
-		echo "$SWAP_VALUE" | sudo tee -a /etc/sysctl.conf
-	fi
-
-	# Apply the changes
-	sudo sysctl -p
-
-	logger "Swappiness value set to 100 successfully."
-}
-
-make_exec() {
+create_zram_service() {
 	# Create the ZRAM setup script
-	cat <<EOF | sudo tee /usr/local/bin/setup_zram.sh
+	cat <<EOF | tee /usr/local/bin/setup_zram.sh
 #!/bin/bash
 # Calculate the full size of the total memory in bytes
 TOTALMEM=$(free -b | awk '/^Mem:/ {print $2}')
@@ -106,10 +88,48 @@ setup_zram
 EOF
 
 	# Make the ZRAM setup script executable
-	sudo chmod +x /usr/local/bin/setup_zram.sh
-	logger "Script setup_zram.sh created and available in environment that include /usr/local/bin"
+	chmod +x /usr/local/bin/setup_zram.sh
+
+	# Create systemd service file for ZRAM
+	cat <<EOF | tee /etc/systemd/system/zram.service
+[Unit]
+Description=Setup ZRAM Service
+After=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/setup_zram.sh
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+	# Enable and start the ZRAM service
+	systemctl daemon-reload
+	systemctl enable zram.service
+	systemctl start zram.service
+
+	logger "ZRAM service created and started" "INFO"
 }
 
-setup_zram
-setup_swappiness 100
-make_exec
+main() {
+	if [ "$(id -u)" -ne 0 ]; then
+		logger "This script must be run as root. Exiting." "ERROR"
+		exit 1
+	fi
+
+	# Calculate the full size of the total memory in bytes
+	TOTALMEM=$(free -b | awk '/^Mem:/ {print $2}')
+
+	setup_zram
+
+	# Check if a swappiness value is provided as an argument
+	if [ $# -ge 1 ]; then
+		setup_swappiness "$1"
+	else
+		logger "No swappiness value provided, skipping swappiness setup." "INFO"
+	fi
+}
+
+main "$@"
