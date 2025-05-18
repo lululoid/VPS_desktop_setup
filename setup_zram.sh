@@ -56,9 +56,8 @@ setup_zram() {
 	size=$1
 	use_dedup=$2
 
-	if [ ! -b /dev/zram0 ]; then
+	if [ ! -e /dev/zram0 ]; then
 		modprobe zram
-		cat /sys/class/zram-control/hot_add
 	fi
 
 	if resize_zram "$size" "$use_dedup"; then
